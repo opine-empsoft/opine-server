@@ -12,7 +12,7 @@ import os, json, logging
 logging.basicConfig(level=logging.DEBUG)
 
 server = Flask(__name__)
-server.secret_key = os.urandom(24)
+server.secret_key = os.environ.get("SECRET_KEY", os.urandom(24))
 server.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
     'DATABASE_URL', 'postgresql:///local_database')
 
@@ -181,18 +181,18 @@ def send_leave():
     response.headers["Content-Type"] = "application/json"
     return response
 
-def do_send_push(sender, message, channels, data):
+def do_send_push(sender, channels, data):
 
     database.session = database.create_scoped_session()
 
     headers = {
-        "X-Parse-Application-Id": "Application-Id",
-        "X-Parse-REST-API-Key": "API-Key",
+        "X-Parse-Application-Id": os.environ.get("PARSE_APPLICATION_ID", None),
+        "X-Parse-REST-API-Key": os.environ.get("PARSE_REST_API_KEY", None),
         "Content-Type":"application/json"
     }
 
     payload = {
-        "channels": channels,      
+        "channels": channels,
         "data" : data
     }
 
@@ -204,6 +204,40 @@ def do_send_push(sender, message, channels, data):
     else:
         logging.info("Cannot send message to Parse push notifications system")
 
+@server.route('/push', methods=['POST'])
+@login_required
+def send_push():
+
+    data = request.json
+    if ( data == None ):
+        response = make_response(json.dumps({'server':'payload must be valid json', 'code':'error'}), 200)
+        response.headers["Content-Type"] = "application/json"
+        return response
+    data = dict(data)
+    if ( data == None ):
+        response = make_response(json.dumps({'server':'payload must be valid json', 'code':'error'}), 200)
+        response.headers["Content-Type"] = "application/json"
+        return response
+
+    push_data = data.get('push', None)
+
+    if ( push_data == None ):
+        response = make_response(json.dumps({'server':'push_data cannot be ommitted!'}), 200)
+        response.headers["Content-Type"] = "application/json"
+        return response
+
+    channels = [ "general" ]
+    push_data["action"] = "com.opine.GENERAL"
+
+    p = Process(target=do_send_push,
+        args=(current_user.get_id(), channels, push_data))
+    p.daemon = True
+    p.start()
+
+    logging.info("triggered push send!")
+    response = make_response(json.dumps({'server':'push sent'}), 200)
+    response.headers["content-type"] = "application/json"
+    return response
 
 if __name__ == "__main__":
 
