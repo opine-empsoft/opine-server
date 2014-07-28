@@ -227,7 +227,7 @@ def send_push():
         return response
 
     channels = [ "general" ]
-    push_data["action"] = "com.opine.GENERAL"
+    push_data["action"] = "com.empsoft.opine.GENERAL"
 
     p = Process(target=do_send_push,
         args=(current_user.get_id(), channels, push_data))
