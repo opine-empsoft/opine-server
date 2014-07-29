@@ -222,7 +222,7 @@ def send_push():
     push_data = data.get('push', None)
 
     if ( push_data == None ):
-        response = make_response(json.dumps({'server':'\'push\' cannot be ommitted!'}), 200)
+        response = make_response(json.dumps({'server':'\'push\' cannot be ommitted!', 'code':'error'}), 200)
         response.headers["Content-Type"] = "application/json"
         return response
 
@@ -235,7 +235,7 @@ def send_push():
     p.start()
 
     logging.info("triggered push send!")
-    response = make_response(json.dumps({'server':'push sent'}), 200)
+    response = make_response(json.dumps({'server':'push sent', 'code':'ok'}), 200)
     response.headers["content-type"] = "application/json"
     return response
 
