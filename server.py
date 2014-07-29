@@ -150,7 +150,7 @@ def send_presence(username):
             logging.info("Cannot use this username now, it is currently taken")
             response = make_response(json.dumps({'server':'presence fail (this username is taken)', 'code':'error'}), 200)
         else:
-            if ( login_user(User.get(username)) ):
+            if ( login_user(User.get(username), remember=True) ):
                 u.taken = True
                 database.session.add(u)
                 database.session.commit()
@@ -174,9 +174,9 @@ def send_leave():
         u.taken = False
         database.session.add(u)
         database.session.commit()
-        response = make_response(json.dumps({'server':'{} just left'.format(username)}), 200)
+        response = make_response(json.dumps({'server':'{} just left'.format(username), 'code':'ok'}), 200)
     else:
-        response = make_response(json.dumps({'server':'leaving failed somehow'}), 200)
+        response = make_response(json.dumps({'server':'leaving failed somehow', 'code':'error'}), 200)
 
     response.headers["Content-Type"] = "application/json"
     return response
@@ -222,7 +222,7 @@ def send_push():
     push_data = data.get('push', None)
 
     if ( push_data == None ):
-        response = make_response(json.dumps({'server':'push_data cannot be ommitted!'}), 200)
+        response = make_response(json.dumps({'server':'\'push\' cannot be ommitted!'}), 200)
         response.headers["Content-Type"] = "application/json"
         return response
 
