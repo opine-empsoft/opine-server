@@ -21,7 +21,7 @@ database = SQLAlchemy(server)
 
 class StoredUser(database.Model):
 
-    __tablename__ = 'User'
+    __tablename__ = 'user'
     id = database.Column(database.Integer, primary_key=True)
     uid = database.Column(database.String(20), unique=True)
     taken = database.Column(database.Boolean)
