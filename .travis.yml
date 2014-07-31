@@ -1,9 +1,14 @@
 language: python
 python:
-  - "2.7"
+- '2.7'
 before_install:
-  - psql -c 'create database travis_ci_test;' -U postgres
-  - export DATABASE_URL=postgresql:///travis_ci_test
-  - gem install foreman
+- psql -c 'create database travis_ci_test;' -U postgres
+- export DATABASE_URL=postgresql:///travis_ci_test
+- gem install foreman
 install: pip install -r requirements.txt --use-mirrors
 script: python test_server.py
+deploy:
+  provider: heroku
+  api_key:
+    secure: QxCBZPcUrXP0T3jZ/5sdTsC6ty8cRyIi7gWrYFWqEcEbX+LsYzfz8Q4SDcZW0AnUaTcn3VPu3U94x2RugfCx3kXd3ymMOd90KbMOWeusXUjXW3E76DbJ4nFGCCIRq+GhWb5ykQdePypAsyxJFTo0rrnbYLPs3koSvQt6WWbEq6c=
+  app: opine-server
